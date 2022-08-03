@@ -22,7 +22,7 @@ All functions' return are `pd.DataFrame`.
 
 Use `df.plot()` to show the figure.
 ```python
-df_name.plot(figure=(12,6), title='CEEMDAN-VMD-LSTM Predicting Result')
+df_name.plot(figsize=(12,6), title='CEEMDAN-VMD-LSTM Predicting Result')
 ```
 
 Use `pd.DataFrame.to_csv()` to download the result.
