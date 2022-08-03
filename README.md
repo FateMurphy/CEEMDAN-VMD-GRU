@@ -11,25 +11,25 @@ Change `CODE` and `PATH` to load dataset from a csv file to create `pd.Series` a
 ```python
 df_raw_data = pd.read_csv(PATH+CODE+'.csv', header=0, parse_dates=['date'], date_parser=lambda x: datetime.datetime.strptime(x, '%Y%m%d'))
 ```
-### 1.Just follow the steps without modification
-Run the .py file without any modification, but please pay attention to the `modules`
+### 1. Just follow the steps without modification
+Run the .py file without any modification, but please pay attention to `pip install modules`
 ```python
 if __name__ == '__main__': ...
 ```
 
 ### 2. Plot and Output
-All functions' return are `pd.DataFrame`.
-Use df.plot() to show the figure.
+All functions' return are `pd.DataFrame`.  
+
+Use `df.plot()` to show the figure.
 ```python
-df_predict_raw.plot(figure=(12,6), title='CEEMDAN-VMD-LSTM Predicting Result')
+df_name.plot(figure=(12,6), title='CEEMDAN-VMD-LSTM Predicting Result')
 ```
 
 Use `pd.DataFrame.to_csv()` to download the result.
-Calculate sample entropy
 ```python
-pd.DataFrame.to_csv(df_predict_raw, PATH+CODE+'_predict_output.csv')
+pd.DataFrame.to_csv(df_name, PATH+'CEEMDAN_VMD_LSTM_predict_output.csv')
 ```
 
 ## Postscript
-For more functions, please use CEEMDAN_LSTM. Thanks!
+For more functions, please use CEEMDAN_LSTM. Thanks!  
 If you have any questions, please leave your comment or email me.
