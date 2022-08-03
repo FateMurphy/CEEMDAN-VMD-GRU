@@ -103,7 +103,7 @@ def create_train_test_set(data=None, timestep=30, fitting=False): # Create train
         trainY.append(np.array(dataY[i+timestep]))
     return np.array(trainX), np.array(trainY), scalarY
 
-def LSTM_predict(data=None, epochs=100, predict_duration=10, fitting=False): # LSTM forecasting function
+def LSTM_predict(data=None, epochs=1000, predict_duration=100, fitting=False): # LSTM forecasting function
     if fitting: trainX,trainY,scalarY = create_fitting_train_test_set(data) # Get training and test X Y
     else: trainX,trainY,scalarY = create_train_test_set(data)
     x_train,x_test = trainX[:-predict_duration],trainX[-predict_duration:] # Split training and test set
@@ -157,20 +157,27 @@ if __name__ == '__main__':
     # df_vmd_co_imf0.plot(title='VMD Decomposition of Co-IMF0', subplots=True)
 
     # 7.Predict Co-IMF0 by matrix-input LSTM
+    time0 = time.time()
     df_vmd_co_imf0['sum'] = df_integrate_result['co-imf0']
     co_imf0_predict_raw, co_imf0_lstm_evaluation, co_imf0_train_loss = LSTM_predict(df_vmd_co_imf0)
     print('======Co-IMF0 Predicting Finished======\n', co_imf0_lstm_evaluation)
+    time1 = time.time()
+    print('Running time: %.3fs'%(time1-time0))
     # co_imf0_predict_raw.plot(title='Co-IMF0 Predicting Result')
     # co_imf0_train_loss.plot(title='Co-IMF0 Training Loss')
 
     # 8.Predict Co-IMF1 and Co-IMF2 by vector-input LSTM
     co_imf1_predict_raw, co_imf1_lstm_evaluation, co_imf1_train_loss = LSTM_predict(df_integrate_result['co-imf1'])
     print('======Co-IMF1 Predicting Finished======\n', co_imf1_lstm_evaluation)
+    time2 = time.time()
+    print('Running time: %.3fs'%(time2-time1))
     # co_imf1_predict_raw.plot(title='Co-IMF1 Predicting Result')
     # co_imf1_train_loss.plot(title='Co-IMF1 Training Loss')
 
     co_imf2_predict_raw, co_imf2_lstm_evaluation, co_imf2_train_loss = LSTM_predict(df_integrate_result['co-imf2'])
     print('======Co-IMF2 Predicting Finished======\n', co_imf2_lstm_evaluation)
+    time3 = time.time()
+    print('Running time: %.3fs'%(time3-time2))
     # co_imf2_predict_raw.plot(title='Co-IMF2 Predicting Result')
     # co_imf2_train_loss.plot(title='Co-IMF2 Training Loss')
 
@@ -180,9 +187,10 @@ if __name__ == '__main__':
     df_fitting_set = df_fitting_set.append(df_co_imf_predict_raw, ignore_index=True).reset_index(drop=True)
     df_fitting_set['sum'] = series_close.values
     df_predict_raw, df_lstm_evaluation, df_train_loss = LSTM_predict(df_fitting_set)
-    end = time.time()
     print('======'+CODE+' Predicting Finished======\n', df_lstm_evaluation)
-    print('Running time: %.3fs'%(end-start))
+    end = time.time()
+    print('Running time: %.3fs'%(end-time3))
+    print('Total Running time: %.3fs'%(end-start))
     df_predict_raw.plot(title=CODE+' Predicting Result')
     df_train_loss.plot(title=CODE+' Training Loss')
     # pd.DataFrame.to_csv(df_predict_raw, PATH+CODE+'_predict_output.csv')
