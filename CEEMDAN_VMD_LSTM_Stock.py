@@ -181,7 +181,19 @@ if __name__ == '__main__':
     # co_imf2_predict_raw.plot(title='Co-IMF2 Predicting Result')
     # co_imf2_train_loss.plot(title='Co-IMF2 Training Loss')
 
-    # 9.Fitting 3 result to get the final forecasting result
+    # 9. Add 3 result to get the final forecasting result (instead fitting method )
+    duration = 100
+    series_add_predict_result = co_imf0_predict_raw['predict']+co_imf1_predict_raw['predict']+co_imf2_predict_raw['predict']
+    df_add_predict_raw = pd.DataFrame({'predict': series_add_predict_result.values, 'raw': series_close[-duration:].values}, index=range(duration))
+    df_add_evaluation = evaluation_model(series_close[-duration:],series_add_predict_result)
+    print('======'+CODE+' Predicting Finished======\n', df_add_evaluation)
+    end = time.time()
+    print('Total Running time: %.3fs'%(end-start))
+    df_add_predict_raw.plot(title=CODE+' Predicting Result')
+    # pd.DataFrame.to_csv(df_add_predict_raw, PATH+CODE+'_predict_output.csv')
+
+    # 10.Fit 3 result to get the final forecasting result (instead adding method )
+    """
     df_co_imf_predict_raw =  pd.DataFrame({'co-imf0': co_imf0_predict_raw['predict'], 'co-imf1': co_imf1_predict_raw['predict'], 'co-imf2': co_imf2_predict_raw['predict']}, index=range(len(co_imf0_predict_raw)))
     df_fitting_set = df_integrate_result[:-len(df_co_imf_predict_raw)]
     df_fitting_set = df_fitting_set.append(df_co_imf_predict_raw, ignore_index=True).reset_index(drop=True)
@@ -194,3 +206,5 @@ if __name__ == '__main__':
     df_predict_raw.plot(title=CODE+' Predicting Result')
     df_train_loss.plot(title=CODE+' Training Loss')
     # pd.DataFrame.to_csv(df_predict_raw, PATH+CODE+'_predict_output.csv')
+    """
+
