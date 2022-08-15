@@ -104,8 +104,7 @@ def create_train_test_set(data=None, timestep=30, fitting=False): # Create train
     return np.array(trainX), np.array(trainY), scalarY
 
 def GRU_predict(data=None, epochs=100, predict_duration=100, fitting=False): # GRU forecasting function
-    if fitting: trainX,trainY,scalarY = create_fitting_train_test_set(data) # Get training and test X Y
-    else: trainX,trainY,scalarY = create_train_test_set(data)
+    trainX,trainY,scalarY = create_train_test_set(data, fitting)
     x_train,x_test = trainX[:-predict_duration],trainX[-predict_duration:] # Split training and test set
     y_train,y_test = trainY[:-predict_duration],trainY[-predict_duration:]
     train_X = x_train.reshape((x_train.shape[0], x_train.shape[1], x_train.shape[2])) # Convert to tensor 
@@ -198,7 +197,7 @@ if __name__ == '__main__':
     df_fitting_set = df_integrate_result[:-len(df_co_imf_predict_raw)]
     df_fitting_set = df_fitting_set.append(df_co_imf_predict_raw, ignore_index=True).reset_index(drop=True)
     df_fitting_set['sum'] = series_close.values
-    df_predict_raw, df_gru_evaluation, df_train_loss = GRU_predict(df_fitting_set)
+    df_predict_raw, df_gru_evaluation, df_train_loss = GRU_predict(df_fitting_set, fitting=True)
     print('======'+CODE+' Predicting Finished======\n', df_gru_evaluation)
     end = time.time()
     print('Running time: %.3fs'%(end-time3))
