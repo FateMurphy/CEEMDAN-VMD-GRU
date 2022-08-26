@@ -83,7 +83,7 @@ def evaluation_model(y_test, y_pred): # Model evaluation function
     df_evaluation = pd.DataFrame({'r2': r2, 'rmse': rmse, 'mae': mae, 'mape': mape}, index = range(1))
     return df_evaluation
 
-def create_train_test_set(data=None, timestep=30, fitting=False): # Create training set and test set with normalization
+def create_train_test_set(data=None, timestep=30, co_imf_predict_for_fitting=None): # Create training set and test set with normalization
     if isinstance(data, pd.DataFrame): # Initialize DataFrame training set and test set
         dataY = data['sum'].values.reshape(-1, 1)
         dataX = data.drop('sum', axis=1, inplace=False)
@@ -91,20 +91,25 @@ def create_train_test_set(data=None, timestep=30, fitting=False): # Create train
         dataY = data.values.reshape(-1, 1)
         dataX = dataY
 
-    scalarX = MinMaxScaler(feature_range=(0,1)) # sklearn Normalize
+    scalarX = MinMaxScaler(feature_range=(0,1)) # Normalize by sklearn
     dataX = scalarX.fit_transform(dataX)
+    if co_imf_predict_for_fitting is not None: co_imf_predict_for_fitting = scalarX.transform(co_imf_predict_for_fitting)
+    
     scalarY = MinMaxScaler(feature_range=(0,1))
     dataY = scalarY.fit_transform(dataY)
     
     trainX, trainY = [], [] # Create training set and test set
     for i in range(len(dataY)-timestep):
-        if fitting: trainX.append(np.array(dataX[i:(i+timestep+1)])) # when fitting, it can use today's data'
-        else: trainX.append(np.array(dataX[i:(i+timestep)]))
+        trainX.append(np.array(dataX[i:(i+timestep)]))
         trainY.append(np.array(dataY[i+timestep]))
+        if co_imf_predict_for_fitting is not None: # When fitting, it uses today's forecasting result 
+            if i<(len(dataY)-timestep-len(co_imf_predict_for_fitting)): trainX[i] = np.insert(trainX[i], timestep, dataX[i+timestep], 0)
+            else: trainX[i] = np.insert(trainX[i], timestep, co_imf_predict_for_fitting[i-(len(dataY)-timestep-len(co_imf_predict_for_fitting))], 0)
+    
     return np.array(trainX), np.array(trainY), scalarY
 
-def GRU_predict(data=None, epochs=100, predict_duration=100, fitting=False): # GRU forecasting function
-    trainX,trainY,scalarY = create_train_test_set(data, fitting)
+def GRU_predict(data=None, epochs=100, predict_duration=100, fitting=None): # GRU forecasting function
+    trainX,trainY,scalarY = create_train_test_set(data, co_imf_predict_for_fitting=fitting) # Get training and test X Y
     x_train,x_test = trainX[:-predict_duration],trainX[-predict_duration:] # Split training and test set
     y_train,y_test = trainY[:-predict_duration],trainY[-predict_duration:]
     train_X = x_train.reshape((x_train.shape[0], x_train.shape[1], x_train.shape[2])) # Convert to tensor 
@@ -129,7 +134,7 @@ def GRU_predict(data=None, epochs=100, predict_duration=100, fitting=False): # G
 # ========================================================================
 if __name__ == '__main__':
     start = time.time()
-    CODE, PATH = 'sh.000001', 'D:\\Stock\\' # code such as 'sh.000001'
+    CODE, PATH = 'sh.000001', 'D:\\Stock-LSTM\\' # code such as 'sh.000001'
 
     # 1.Load raw data
     df_raw_data = pd.read_csv(PATH+CODE+'.csv', header=0, parse_dates=['date'], date_parser=lambda x: datetime.datetime.strptime(x, '%Y%m%d'))
@@ -194,10 +199,9 @@ if __name__ == '__main__':
     # 10.Fit 3 result to get the final forecasting result (instead adding method )
     """
     df_co_imf_predict_raw =  pd.DataFrame({'co-imf0': co_imf0_predict_raw['predict'], 'co-imf1': co_imf1_predict_raw['predict'], 'co-imf2': co_imf2_predict_raw['predict']}, index=range(len(co_imf0_predict_raw)))
-    df_fitting_set = df_integrate_result[:-len(df_co_imf_predict_raw)]
-    df_fitting_set = df_fitting_set.append(df_co_imf_predict_raw, ignore_index=True).reset_index(drop=True)
+    df_fitting_set = df_integrate_result
     df_fitting_set['sum'] = series_close.values
-    df_predict_raw, df_gru_evaluation, df_train_loss = GRU_predict(df_fitting_set, fitting=True)
+    df_predict_raw, df_gru_evaluation, df_train_loss = GRU_predict(df_fitting_set, fitting=df_co_imf_predict_raw)
     print('======'+CODE+' Predicting Finished======\n', df_gru_evaluation)
     end = time.time()
     print('Running time: %.3fs'%(end-time3))
