@@ -4,7 +4,7 @@ CEEMDAN-VMD-GRU Forecasting model (a light version of CEEMDAN_LSTM) is a Python 
 Carbon price forecasting based on CEEMDAN and LSTM, Applied Energy, 2022, Volume 311, 118601, ISSN 0306-2619.)](https://doi.org/10.1016/j.apenergy.2022.118601.)
 
 ![](https://github.com/FateMurphy/CEEMDAN-VMD-GRU/blob/main/CEEMDAN-VMD-GRU%20predictor%20flowchart.jpg)
-
+### Pay attention to the look-ahead bias in this program.
 ## Start to predict
 ### 0. Load raw data
 Change `CODE` and `PATH` to load dataset from a csv file to create `pd.Series` as raw data.
